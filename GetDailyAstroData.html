@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.21/moment-timezone-with-data.js"></script>
+		<script type="text/javascript">
+			// Get today's date
+			var today = moment(); // Date object for today!
+			var dateToday    = today.clone().tz("America/Anchorage").format('MM/DD/YYYY'); // Create date string for JSON data conversions below
+			var dateTodayURL = today.clone().tz("America/Anchorage").format('YYYY-MM-DD'); // Date string for API call
+			
+			//Do the JSON stuff
+			var apiURL = "https://api.sunrise-sunset.org/json?lat=63.0695000&lng=-151.0074000&date=" + dateTodayURL; // API URl w/ today's date
+			var xmlhttp = new XMLHttpRequest(); // Initiate JSON HTTP request object
+			xmlhttp.onreadystatechange = function() { // JSON magic
+				if (this.readyState == 4 && this.status == 200) { // Proceed if good response from server
+					var myObj  = JSON.parse(this.responseText); // Parse data from JSON response
+					var sunriseUTC = moment(dateToday + " " + myObj.results.sunrise + " +0000", 'MM/DD/YYYY h:mm:ss A ZZ', "UTC"); // A = AM/PM, ZZ = UTC offset
+					var sunsetUTC  = moment(dateToday + " " + myObj.results.sunset  + " +0000", 'MM/DD/YYYY h:mm:ss a ZZ', "UTC");
+					var sunriseAK  = sunriseUTC.clone().tz("America/Anchorage"); // Convert to local time
+					var sunsetAK   = sunsetUTC.clone().tz("America/Anchorage");
+					sunriseAK = sunriseAK.format('h:mm a'); // Create time output
+					sunsetAK  = sunsetAK.format( 'h:mm a');
+					document.getElementById("sunrise").innerHTML   = sunriseAK; // Pass converted time to HTML element
+					document.getElementById("sunset").innerHTML    = sunsetAK;
+					document.getElementById("daylength").innerHTML = myObj.results.day_length; // Pass daylength value from JSON to HTML element
+				}
+			};
+			xmlhttp.open("GET", apiURL, true);
+			xmlhttp.send();
+		</script>
+	</head>
+	<body>
+		<h3>Today's astronomical data</h3>
+		<b>Sunrise</b>: <span id="sunrise"></span>&nbsp;&nbsp;<b>Sunset</b>: <span id="sunset"></span>&nbsp;&nbsp;<b>Daylength</b>: <span id="daylength"></span>
+	</body>
+</html>
